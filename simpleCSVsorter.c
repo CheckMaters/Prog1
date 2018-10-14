@@ -15,6 +15,17 @@
 
 int main(int argc, char* argv[]) {
 	//checking if the input argument is correct or Not
+	
+	
+	//the output file is not given in the parameter
+	if(argc == 5) {
+		if(argc[1] != "-c" && argc[3] != "-d") {
+			printf("Error\n");
+			return 0;
+		}
+	}
+	
+	
 	if(argc != 3) {
 		printf("Error! Check your Parameters\n");
 		return 0;
