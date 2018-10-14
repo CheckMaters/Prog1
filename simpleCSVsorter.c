@@ -46,10 +46,9 @@ int main(int argc, char* argv[]) {
 			printf("Error! Can't open directory\n");
 			return -1;		//returning -1 because it's an error
 		}
-	
 
 		char* sort_By_This_Value = argv[2];
-		return sort_The_List(sort_By_This_Value);
+		return scan_Directory (directory, sort_By_This_Value);
 
 }
 
@@ -176,18 +175,20 @@ int is_CSV_File (const char * name) {
 this function will scan through the directory 
 to find .csv files and possibly other 
 sub-directories if there's any.
+It also performs sorting on finding 
+CSV file on sorting_Column.
 */
-int scan_Directory(DIR * directory){
-	int return_value = -1;
+int scan_Directory(DIR * directory, char * sorting_Column){
+	int return_Value = -1;
 	if(directory == NULL){
 		printf("ERROR! Unable to open directory\n")
 		return -1;			//returning -1 because it is an error
 	}
-	struct direct * directory_info;
-	while ((directory_info = readdir(directory))!= NULL){
+	struct direct * directory_Info;
+	while ((directory_Info = readdir(directory))!= NULL){
 		
 		//checks if the first read name from directory is a directory or not;
-		return_value = is_Directory(directory->d_name);
+		return_value = is_Directory(directory_Infor->d_name);
 		/*
 		if return value is zero, it means this is directory
 		and will perform recurssion from this point on that 
@@ -201,9 +202,11 @@ int scan_Directory(DIR * directory){
 		
 		// if the read value is not directory, check if it's CSV file or not
 		else {
-			return_value = is_CSV_File(directory->d_name);
+			return_value = is_CSV_File(directory_Info->d_name);
 			if(return_value == 0){
 				//************this means it is CSV file, perform sorting
+				FILE * file = fopen(directory_Info->d_name);
+				return_Value = sort_The_List(sorting_Column, file);
 			} 
 			else {
 				continue; //continuing to the next loop because read value isn't directory or CSV file
@@ -212,6 +215,7 @@ int scan_Directory(DIR * directory){
 		
 		
 	}
+	return return_Value;
 }
 
 
