@@ -1,8 +1,9 @@
-#include <math.h>
 #include <stdio.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <dirent.h>
 #include "generalFunctions.h"
 #include "columnsorter.h"
 #include "movieListData.h"
@@ -18,19 +19,34 @@ int main(int argc, char* argv[]) {
 	
 	
 	//the output file is not given in the parameter
-	if(argc == 5) {
-		if(argc[1] != "-c" && argc[3] != "-d") {
-			printf("Error\n");
-			return 0;
+	if(argc == 5 || argc == 7) {
+		if(argv[1] != "-c" && argv[3] != "-d") {
+			printf("Parameters are not correctly formated\n");
+			return -1;				//returning -1 because it's an error
 		}
+		if(argc == 7) {
+				if(argv[5] != "-o") {
+					printf("Parameters are not correctly formated\n");
+					return -1;		//returning -1 because it's an error
+				}
+		}
+	} 
+	else {
+		printf("Parameters are not correctly formated\n");
+		return -1;  			//returning -1 because it's an error
 	}
 	
+	/*
+	this will create a directory and also
+	a struct that keeps all the information
+	about directory.
+	*/
+	DIR * directory = openddir(argv[4]);
+		if(directory == NULL) {
+			printf("Error! Can't open directory\n");
+			return -1;		//returning -1 because it's an error
+		}
 	
-	if(argc != 3) {
-		printf("Error! Check your Parameters\n");
-		return 0;
-	}
-
 
 		char* sort_By_This_Value = argv[2];
 		return sort_The_List(sort_By_This_Value);
@@ -45,7 +61,7 @@ file in alphabetical boreds. The column
 that is going to be sorted is represented
 by sort_By_This_Value.
 */
-int sort_The_List(char* sort_By_This_Value) {
+int sort_The_List(char* sort_By_This_Value, FILE* file) {
 
 	// Buffer for reading from stdin
 	BUFFER read_Stdin_File;																	// Buffer is created to read the stdin File
@@ -79,7 +95,7 @@ int sort_The_List(char* sort_By_This_Value) {
 	movie_List.iSize = 0;
 	int no_Use = 0;
 		// Read the header and get the index for the sorting key
-		if (getline(&(read_Stdin_File.data), &(read_Stdin_File.length_Of_Data), stdin) > 0 ) {
+		if (getline(&(read_Stdin_File.data), &(read_Stdin_File.length_Of_Data), file) > 0 ) {
 			delete_Newline_Char_At_The_End(&read_Stdin_File);						// this will delete the new line character from the end of the string line
 			//
 			header_Of_File.data = (char*)malloc (sizeof(char) * read_Stdin_File.length_Of_Data);
@@ -120,7 +136,7 @@ int sort_The_List(char* sort_By_This_Value) {
 		}
 	}
 		else {
-			printf("Error! Unable to read file through STDIN. Please check file\n");
+			printf("Error! Unable to read file provided within directory. Please check file or directory\n");
 		}
 
 	freeBuffer(&header_Of_File);
@@ -132,6 +148,75 @@ int sort_The_List(char* sort_By_This_Value) {
 
 	return output_Result;
 }
+
+
+
+
+
+//this checks if the given char string is directory or not
+int is_Directory (const char * name) {
+	DIR * temp = opendir(name);
+	if (temp != NULL){
+		return 0;	//returns 0 if it's directory, else -1
+	}
+	return -1;
+}
+
+
+//this checks if the given char string is CSV file or not
+int is_CSV_File (const char * name) {
+	if(strlen(name) > 4 && !(strcmp(name + strlen(name) - 4, ".csv")){
+		return 0;			//returns 0 if it's csv file, else -1
+	}
+	   return -1;
+}
+
+
+/*
+this function will scan through the directory 
+to find .csv files and possibly other 
+sub-directories if there's any.
+*/
+int scan_Directory(DIR * directory){
+	int return_value = -1;
+	if(directory == NULL){
+		printf("ERROR! Unable to open directory\n")
+		return -1;			//returning -1 because it is an error
+	}
+	struct direct * directory_info;
+	while ((directory_info = readdir(directory))!= NULL){
+		
+		//checks if the first read name from directory is a directory or not;
+		return_value = is_Directory(directory->d_name);
+		/*
+		if return value is zero, it means this is directory
+		and will perform recurssion from this point on that 
+		sub-directory
+		*/
+		if(return_value == 0) {
+			//**************this means it is directory, perform recurssion
+			
+		}
+		
+		
+		// if the read value is not directory, check if it's CSV file or not
+		else {
+			return_value = is_CSV_File(directory->d_name);
+			if(return_value == 0){
+				//************this means it is CSV file, perform sorting
+			} 
+			else {
+				continue; //continuing to the next loop because read value isn't directory or CSV file
+			}
+		}
+		
+		
+	}
+}
+
+
+
+
 
 
 /*
