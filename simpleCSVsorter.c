@@ -20,12 +20,12 @@ int main(int argc, char* argv[]) {
 	
 	//the output file is not given in the parameter
 	if(argc == 5 || argc == 7) {
-		if(argv[1] != "-c" || argv[3] != "-d") {
+		if(strcmp("-c", argv[1]) != 0 || strcmp("-d", argv[3]) != 0) {
 			printf("Parameters are not correctly formated\n");
 			return -1;				//returning -1 because it's an error
 		}
 		if(argc == 7) {
-				if(argv[5] != "-o") {
+				if(strcmp("-o", argv[5]) != 0) {
 					printf("Parameters are not correctly formated\n");
 					return -1;		//returning -1 because it's an error
 				}
