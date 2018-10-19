@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
 	
 	//the output file is not given in the parameter
 	if(argc == 5 || argc == 7) {
-		if(argv[1] != "-c" && argv[3] != "-d") {
+		if(argv[1] != "-c" || argv[3] != "-d") {
 			printf("Parameters are not correctly formated\n");
 			return -1;				//returning -1 because it's an error
 		}
@@ -176,7 +176,8 @@ this function will scan through the directory
 to find .csv files and possibly other 
 sub-directories if there's any.
 It also performs sorting on finding 
-CSV file on sorting_Column.
+CSV file with sorting_Column, which is the 
+column user wants to sort file on.
 */
 int scan_Directory(DIR * directory, char * sorting_Column){
 	int return_Value = -1;
@@ -184,11 +185,11 @@ int scan_Directory(DIR * directory, char * sorting_Column){
 		printf("ERROR! Unable to open directory\n")
 		return -1;			//returning -1 because it is an error
 	}
-	struct direct * directory_Info;
+	struct dirent * directory_Info;
 	while ((directory_Info = readdir(directory))!= NULL){
 		
-		//checks if the first read name from directory is a directory or not;
-		return_value = is_Directory(directory_Infor->d_name);
+		//checks if the current file that file pointer points to is a directory or not
+		return_value = is_Directory(directory_Info->d_name);
 		/*
 		if return value is zero, it means this is directory
 		and will perform recurssion from this point on that 
