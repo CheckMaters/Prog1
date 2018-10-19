@@ -164,7 +164,7 @@ int is_Directory (const char * name) {
 
 //this checks if the given char string is CSV file or not
 int is_CSV_File (const char * name) {
-	if(strlen(name) > 4 && !(strcmp(name + strlen(name) - 4, ".csv")){
+	if(strlen(name) > 4 && !(strcmp(name + strlen(name) - 4, ".csv"))){
 		return 0;			//returns 0 if it's csv file, else -1
 	}
 	   return -1;
@@ -188,6 +188,8 @@ int scan_Directory(DIR * directory, char * sorting_Column){
 	struct dirent * directory_Info;
 	while ((directory_Info = readdir(directory))!= NULL){
 		
+		
+		
 		//checks if the current file that file pointer points to is a directory or not
 		return_Value = is_Directory(directory_Info->d_name);
 		/*
@@ -206,7 +208,7 @@ int scan_Directory(DIR * directory, char * sorting_Column){
 			return_Value = is_CSV_File(directory_Info->d_name);
 			if(return_Value == 0){
 				//************this means it is CSV file, perform sorting
-				FILE * file = fopen(directory_Info->d_name);
+				FILE * file = fopen(directory_Info->d_name, "r");
 				return_Value = sort_The_List(sorting_Column, file);
 			} 
 			else {
