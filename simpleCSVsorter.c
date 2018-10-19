@@ -182,20 +182,20 @@ column user wants to sort file on.
 int scan_Directory(DIR * directory, char * sorting_Column){
 	int return_Value = -1;
 	if(directory == NULL){
-		printf("ERROR! Unable to open directory\n")
+		printf("ERROR! Unable to open directory\n");
 		return -1;			//returning -1 because it is an error
 	}
 	struct dirent * directory_Info;
 	while ((directory_Info = readdir(directory))!= NULL){
 		
 		//checks if the current file that file pointer points to is a directory or not
-		return_value = is_Directory(directory_Info->d_name);
+		return_Value = is_Directory(directory_Info->d_name);
 		/*
 		if return value is zero, it means this is directory
 		and will perform recurssion from this point on that 
 		sub-directory
 		*/
-		if(return_value == 0) {
+		if(return_Value == 0) {
 			//**************this means it is directory, perform recurssion
 			
 		}
@@ -203,8 +203,8 @@ int scan_Directory(DIR * directory, char * sorting_Column){
 		
 		// if the read value is not directory, check if it's CSV file or not
 		else {
-			return_value = is_CSV_File(directory_Info->d_name);
-			if(return_value == 0){
+			return_Value = is_CSV_File(directory_Info->d_name);
+			if(return_Value == 0){
 				//************this means it is CSV file, perform sorting
 				FILE * file = fopen(directory_Info->d_name);
 				return_Value = sort_The_List(sorting_Column, file);
