@@ -9,7 +9,7 @@ void print_The_List(BUFFER* pHeader, movie_Record* pRecordArray); //helps to pri
 this will use the word provided in the parameter and will sort
 the input file alphabetically based on that column
 */
-int sort_The_List(char* sort_By_This_Value);
+int sort_The_List(char* sort_By_This_Value, FILE * file);
 
 
 /*
@@ -18,7 +18,7 @@ finding .csv files. It will recurse through
 the same function if it detects sub-diretories
 within provided directory. 
 */
-int scan_Directory (DIR * directory);
+int scan_Directory (DIR * directory, char * sorting_Column);
 
 
 //this function checks if the given char string is directory or not

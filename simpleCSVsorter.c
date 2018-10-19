@@ -20,12 +20,12 @@ int main(int argc, char* argv[]) {
 	
 	//the output file is not given in the parameter
 	if(argc == 5 || argc == 7) {
-		if(argv[1] != "-c" || argv[3] != "-d") {
+		if(strcmp("-c", argv[1]) != 0 || strcmp("-d", argv[3]) != 0) {
 			printf("Parameters are not correctly formated\n");
 			return -1;				//returning -1 because it's an error
 		}
 		if(argc == 7) {
-				if(argv[5] != "-o") {
+				if(strcmp("-o", argv[5]) != 0) {
 					printf("Parameters are not correctly formated\n");
 					return -1;		//returning -1 because it's an error
 				}
@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
 	a struct that keeps all the information
 	about directory.
 	*/
-	DIR * directory = openddir(argv[4]);
+	DIR * directory = opendir(argv[4]);
 		if(directory == NULL) {
 			printf("Error! Can't open directory\n");
 			return -1;		//returning -1 because it's an error
@@ -164,7 +164,7 @@ int is_Directory (const char * name) {
 
 //this checks if the given char string is CSV file or not
 int is_CSV_File (const char * name) {
-	if(strlen(name) > 4 && !(strcmp(name + strlen(name) - 4, ".csv")){
+	if(strlen(name) > 4 && !(strcmp(name + strlen(name) - 4, ".csv"))){
 		return 0;			//returns 0 if it's csv file, else -1
 	}
 	   return -1;
@@ -182,20 +182,22 @@ column user wants to sort file on.
 int scan_Directory(DIR * directory, char * sorting_Column){
 	int return_Value = -1;
 	if(directory == NULL){
-		printf("ERROR! Unable to open directory\n")
+		printf("ERROR! Unable to open directory\n");
 		return -1;			//returning -1 because it is an error
 	}
 	struct dirent * directory_Info;
 	while ((directory_Info = readdir(directory))!= NULL){
 		
+		
+		
 		//checks if the current file that file pointer points to is a directory or not
-		return_value = is_Directory(directory_Info->d_name);
+		return_Value = is_Directory(directory_Info->d_name);
 		/*
 		if return value is zero, it means this is directory
 		and will perform recurssion from this point on that 
 		sub-directory
 		*/
-		if(return_value == 0) {
+		if(return_Value == 0) {
 			//**************this means it is directory, perform recurssion
 			
 		}
@@ -203,10 +205,10 @@ int scan_Directory(DIR * directory, char * sorting_Column){
 		
 		// if the read value is not directory, check if it's CSV file or not
 		else {
-			return_value = is_CSV_File(directory_Info->d_name);
-			if(return_value == 0){
+			return_Value = is_CSV_File(directory_Info->d_name);
+			if(return_Value == 0){
 				//************this means it is CSV file, perform sorting
-				FILE * file = fopen(directory_Info->d_name);
+				FILE * file = fopen(directory_Info->d_name, "r");
 				return_Value = sort_The_List(sorting_Column, file);
 			} 
 			else {
