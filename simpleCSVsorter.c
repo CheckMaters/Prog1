@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
 	a struct that keeps all the information
 	about directory.
 	*/
-	DIR * directory = openddir(argv[4]);
+	DIR * directory = opendir(argv[4]);
 		if(directory == NULL) {
 			printf("Error! Can't open directory\n");
 			return -1;		//returning -1 because it's an error
