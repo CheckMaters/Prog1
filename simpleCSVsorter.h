@@ -9,7 +9,7 @@ void print_The_List(BUFFER* pHeader, movie_Record* pRecordArray); //helps to pri
 this will use the word provided in the parameter and will sort
 the input file alphabetically based on that column
 */
-int sort_The_List(char* sort_By_This_Value);
+int sort_The_List(char* sort_By_This_Value, FILE * file);
 
 
 /*
