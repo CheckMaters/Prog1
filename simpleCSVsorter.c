@@ -43,13 +43,15 @@ int main(int argc, char* argv[]) {
 	about directory.
 	*/
 	DIR * directory = opendir(argv[4]);
+	char * main_path;
+	strcpy(main_path, argv[4]);
 		if(directory == NULL) {
-			printf("Error! Can't open directory\n");
+			printf("ERROR! Given directory is pointing to NULL\n");
 			return -1;		//returning -1 because it's an error
 		}
 
 		char* sort_By_This_Value = argv[2];
-		return scan_Directory (directory, sort_By_This_Value, argv[4]);
+		return scan_Directory(directory, sort_By_This_Value, main_path);
 
 }
 
@@ -154,10 +156,9 @@ int sort_The_List(char* sort_By_This_Value, FILE* file) {
 
 
 //this checks if the given char string is directory or not
-int is_Directory (const char * name) {
+int is_Directory(const char * name) {
 	DIR * temp_dir = opendir(name);
 	if (temp_dir != NULL){
-		close(temp_dir);
 		return 0;	//returns 0 if it's directory, else -1
 	}
 	return -1;
@@ -183,7 +184,7 @@ column user wants to sort file on.
 */
 int scan_Directory(DIR * directory, char * sorting_Column, char * path){
 	if(directory == NULL){
-		printf("ERROR! Unable to open directory\n");
+		printf("ERROR! Unable to open directory. NULL pointer\n");
 		return -1;			//returning -1 because it is an error
 	}
 	
@@ -231,7 +232,7 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path){
 				directory = opendir(path);	//changing directory to sub directory for child process
 			}
 			else if(PID > 0) {
-				wait(status);	//parent waiting until child returns
+				wait(&status);	//parent waiting until child returns
 			}
 		}
 		
@@ -245,6 +246,7 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path){
 				return_Value = sort_The_List(sorting_Column, file);
 			} 
 			else {
+				printf("%s is not a csv file or directory\n", path);
 				continue; //continuing to the next loop because read value isn't directory or CSV file
 			}
 		}
