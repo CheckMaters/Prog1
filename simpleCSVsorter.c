@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
 		}
 
 		char* sort_By_This_Value = argv[2];
-		return scan_Directory (directory, sort_By_This_Value);
+		return scan_Directory (directory, sort_By_This_Value, argv[4]);
 
 }
 
@@ -157,6 +157,7 @@ int sort_The_List(char* sort_By_This_Value, FILE* file) {
 int is_Directory (const char * name) {
 	DIR * temp = opendir(name);
 	if (temp != NULL){
+		close(temp);
 		return 0;	//returns 0 if it's directory, else -1
 	}
 	return -1;
@@ -180,44 +181,74 @@ It also performs sorting on finding
 CSV file with sorting_Column, which is the 
 column user wants to sort file on.
 */
-int scan_Directory(DIR * directory, char * sorting_Column){
-	int return_Value = -1;
+int scan_Directory(DIR * directory, char * sorting_Column, char * path){
 	if(directory == NULL){
 		printf("ERROR! Unable to open directory\n");
 		return -1;			//returning -1 because it is an error
 	}
+	
+	//setting this value to unusal so that if later program breaks, we can check if this value changes or not
+	int return_Value = -500;	
+	int PID = -500;		// this will store the PID
 	struct dirent * directory_Info;
+	char * current_dir_path;
+	strcpy(current_dir_path, path);
+	
 	while ((directory_Info = readdir(directory))!= NULL){
 		
 		
+		//this if statement will skip over the first . and .. in the directory
+		if((strcpy(directory_Info->d_name, ".") == 0) || (strcpy(directory_Info->d_name, "..") == 0)){
+			continue;
+		}
+		
+		/*
+		concatenating path as each file within directory 
+		will have different path.
+		e.g-> directory/file1
+			directory/file2
+			directory/subdirectory/file3
+		*/
+		path = strcat(path, "/");
+		path = strcat(path, directory_Info->d_name);
+		
 		
 		//checks if the current file that file pointer points to is a directory or not
-		return_Value = is_Directory(directory_Info->d_name);
+		return_Value = is_Directory(path);
 		/*
 		if return value is zero, it means this is directory
 		and will perform recurssion from this point on that 
 		sub-directory
 		*/
 		if(return_Value == 0) {
-			//**************this means it is directory, perform recurssion
+			//**************this means it is directory, perform recurssion*****************
+			PID = fork();
+			int status = 0;		// this is just got parents to wait until child returns
 			
+			
+			if(PID == 0) {			//this means it's a child Process
+				strcpy(current_dir_path, path);	//changing the current path for child process as it is going to be at sub directory level
+				directory = opendir(path);	//changing directory to sub directory for child process
+			}
+			else if(process > 0) {
+				wait(status);	//parent waiting until child returns
+			}
 		}
 		
 		
 		// if the read value is not directory, check if it's CSV file or not
 		else {
-			return_Value = is_CSV_File(directory_Info->d_name);
+			return_Value = is_CSV_File(path);
 			if(return_Value == 0){
-				//************this means it is CSV file, perform sorting
-				FILE * file = fopen(directory_Info->d_name, "r");
+				//************this means it is CSV file, perform sorting******************
+				FILE * file = fopen(path, "r");
 				return_Value = sort_The_List(sorting_Column, file);
 			} 
 			else {
 				continue; //continuing to the next loop because read value isn't directory or CSV file
 			}
 		}
-		
-		
+	strcpy(path,current_dir_path);	//changing directory/file1 to directory, because we are at same level but just looping to next file	
 	}
 	return return_Value;
 }
