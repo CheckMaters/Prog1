@@ -155,9 +155,9 @@ int sort_The_List(char* sort_By_This_Value, FILE* file) {
 
 //this checks if the given char string is directory or not
 int is_Directory (const char * name) {
-	DIR * temp = opendir(name);
-	if (temp != NULL){
-		close(temp);
+	DIR * temp_dir = opendir(name);
+	if (temp_dir != NULL){
+		close(temp_dir);
 		return 0;	//returns 0 if it's directory, else -1
 	}
 	return -1;
@@ -230,7 +230,7 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path){
 				strcpy(current_dir_path, path);	//changing the current path for child process as it is going to be at sub directory level
 				directory = opendir(path);	//changing directory to sub directory for child process
 			}
-			else if(process > 0) {
+			else if(PID > 0) {
 				wait(status);	//parent waiting until child returns
 			}
 		}
