@@ -26,7 +26,7 @@ int is_Directory (const char * name);
 
 
 //this function checks if the given char string is CSV file or no
-int is_CSV_file (const char * name);
+int is_CSV_file (const char * name, char * column);
 
 //this function will remove .csv from the end
 void remove_CSV (char * path, char * new_Path);
