@@ -4,19 +4,19 @@
 Define structures and function prototypes for your sorter
 */
 
-void print_The_List(BUFFER* pHeader, movie_Record* pRecordArray); //helps to print out the result
+void print_The_List(BUFFER* pHeader, movie_Record* pRecordArray, char * path, char* file_Name, char * column); //helps to print out the result
 /*
 this will use the word provided in the parameter and will sort
 the input file alphabetically based on that column
 */
-int sort_The_List(char* sort_By_This_Value, FILE * file);
+int sort_The_List(char* sort_By_This_Value, FILE * file, char * path, char * file_Name);
 
 
 /*
 this function will go through the directory
 finding .csv files. It will recurse through
 the same function if it detects sub-diretories
-within provided directory. 
+within provided directory.
 */
 int scan_Directory (DIR * directory, char * sorting_Column, char * path);
 
@@ -27,6 +27,9 @@ int is_Directory (const char * name);
 
 //this function checks if the given char string is CSV file or no
 int is_CSV_file (const char * name);
+
+//this function will remove .csv from the end
+void remove_CSV (char * path, char * new_Path);
 
 
 //Suggestion: define a struct that mirrors a record (row) of the data set
