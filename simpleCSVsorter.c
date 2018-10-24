@@ -135,9 +135,10 @@ int sort_The_List(char* sort_By_This_Value, FILE* file, char * path, char * file
 				*/
 				mergeSort((void**)movie_List.pRecArray, 0, movie_List.iSize - 1, &column_Info, pFuncCompare);
 				// Output sorted records to file
-				printf("sorted\n");
+
 				print_The_List(&header_Of_File, &movie_List, path, file_Name, sort_By_This_Value);
-				 output_Result = 0;
+				printf("sorted\n");
+				output_Result = 0;
 		}
 	}
 		else {
@@ -169,10 +170,26 @@ int is_Directory(const char * name) {
 
 
 //this checks if the given char string is CSV file or not
-int is_CSV_File (const char * name) {
+int is_CSV_File (const char * name, char * column) {
+
+//printf("CHECKING THIS FILE : %s with this column %s\n\n", name, column);
+	char * test_Name = (char *) calloc ((sizeof(char) * strlen(column)) + 5, (sizeof(char) * strlen(column)) + 5);
+	strncpy(test_Name, column, strlen(column));
+	strcat(test_Name, ".csv");
+
+//printf("this is what we are checking : %s\n\n", test_Name);
+
+	if((strlen(name) > (strlen(column) + 4)) && !(strcmp(name + strlen(name) - (strlen(column) + 4), test_Name))){
+		free(test_Name);
+//printf("THIS FILE IS ALREADY SORTED\n");
+		return -1;		//returning -1 because this file is already sorted
+	}
+
 	if(strlen(name) > 4 && !(strcmp(name + strlen(name) - 4, ".csv"))){
+		free(test_Name);
 		return 0;			//returns 0 if it's csv file, else -1
 	}
+		free(test_Name);
 	   return -1;
 }
 
@@ -198,10 +215,9 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path){
 	int PID_Two = -500;	//this PID will store the PID of child sorting csv file
 	struct dirent * directory_Info;
 	//char current_dir_path[strlen(path) + 1];
-printf("Hello\n");
 	char * current_dir_path = (char *) malloc ((strlen(path) + 1) * sizeof(char));
 	strcat(current_dir_path, path);
-printf("Hello2\n");
+
 
 	while ((directory_Info = readdir(directory))!= NULL){
 
@@ -251,7 +267,7 @@ printf("Hello2\n");
 
 		// if the read value is not directory, check if it's CSV file or not
 		else {
-			return_Value = is_CSV_File(path);
+			return_Value = is_CSV_File(path, sorting_Column);
 			if(return_Value == 0){
 				//************this means it is CSV file, perform sorting******************
 				PID = fork();
@@ -267,7 +283,7 @@ printf("Hello2\n");
 				}
 			}
 			else {
-				printf("%s is not a csv file or directory\n", path);
+//	printf("%s is not a csv file or directory\n", path);
 				strcpy(path, current_dir_path);
 				continue; //continuing to the next loop because read value isn't directory or CSV file
 			}
@@ -279,9 +295,9 @@ printf("Hello2\n");
 
 
 void remove_CSV (char * path, char * new_Path){
-	if(strcmp (path + strlen(path) - 4, ".csv") == 0){
-		strncat(new_Path, path, strlen(path)-4);
-		return;
+	if(strcmp(path + strlen(path) - 4, ".csv") == 0){
+		strncpy(new_Path, path, strlen(path) - 4);
+	return;
 	}
 	return;
 }
@@ -292,14 +308,22 @@ void remove_CSV (char * path, char * new_Path){
 Writes the data from the movie_Record into stdout
 */
 void print_The_List(BUFFER* pHeader, movie_Record* pRecordArray, char * path, char * file_Name, char * column) {
-	char * output_File;
-	char * new_Path;
+	char * output_File = (char * ) calloc ((sizeof(char) * strlen(path)) + strlen(column) + 9, (sizeof(char) * strlen(path)) + strlen(column) + 9);
+	//char * new_Path;
+	char * new_Path = (char * ) calloc ((sizeof(char) * strlen(path)) - 3, (sizeof(char) * strlen(path)) - 3);
 	remove_CSV(path, new_Path);
-	strcat(output_File, path);
+//printf("Path with out csv : %s\n", new_Path);
+	strcat(output_File, new_Path);
+	//strcat(output_File, file_Name);
 	strcat(output_File, "-sorted-");
 	strcat(output_File, column);
 	strcat(output_File, ".csv");
+printf("Output file path : %s\n", output_File);
 	FILE * file = fopen(output_File, "w");
+if(file == NULL ){
+	printf("Can't open file\n\n");
+}
+
 	fprintf(file, "%s\n", pHeader->data);																										// Print header line
 
 	//print all records
@@ -308,4 +332,5 @@ void print_The_List(BUFFER* pHeader, movie_Record* pRecordArray, char * path, ch
 		*((*(pRecordArray->pRecArray + xyz))->sorting_Key_Term) = (*(pRecordArray->pRecArray + xyz))->chHold;		// Put back the char set to '\0' for sorting key
 		fprintf(file, "%s\n", (*(pRecordArray->pRecArray + xyz))->recordData);													// Print Records in a loop
 	}
+	return;
 }
