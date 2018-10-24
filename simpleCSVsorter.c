@@ -65,7 +65,7 @@ file in alphabetical boreds. The column
 that is going to be sorted is represented
 by sort_By_This_Value.
 */
-int sort_The_List(char* sort_By_This_Value, FILE* file) {
+int sort_The_List(char* sort_By_This_Value, FILE* file, char * path, char * file_Name) {
 
 	// Buffer for reading from stdin
 	BUFFER read_File;																	// Buffer is created to read the stdin File
@@ -136,7 +136,7 @@ int sort_The_List(char* sort_By_This_Value, FILE* file) {
 				mergeSort((void**)movie_List.pRecArray, 0, movie_List.iSize - 1, &column_Info, pFuncCompare);
 				// Output sorted records to file
 				printf("sorted\n");
-				print_The_List(&header_Of_File, &movie_List);
+				print_The_List(&header_Of_File, &movie_List, path, file_Name, sort_By_This_Value);
 				 output_Result = 0;
 		}
 	}
@@ -197,20 +197,22 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path){
 	int PID = -500;		// this PID will store the PID of child going through sub-directory
 	int PID_Two = -500;	//this PID will store the PID of child sorting csv file
 	struct dirent * directory_Info;
-	char current_dir_path[strlen(path) + 1];
-
-	strcpy(current_dir_path, path);
+	//char current_dir_path[strlen(path) + 1];
+printf("Hello\n");
+	char * current_dir_path = (char *) malloc ((strlen(path) + 1) * sizeof(char));
+	strcat(current_dir_path, path);
+printf("Hello2\n");
 
 	while ((directory_Info = readdir(directory))!= NULL){
 
-printf("This is the file name part one: %s\n", directory_Info->d_name);
+//printf("This is the file name part one: %s\n", directory_Info->d_name);
 
 		//this if statement will skip over the first . and .. in the directory. d_name is the name of current file/pointer
 		if((strcmp(directory_Info->d_name, ".") == 0) || (strcmp(directory_Info->d_name, "..") == 0)){
 			continue;
 		}
 
-printf("This is the file name: %s\n", directory_Info->d_name);
+//printf("This is the file name: %s\n", directory_Info->d_name);
 		/*
 		concatenating path as each file within directory
 		will have different path.
@@ -236,7 +238,9 @@ printf("This is the file name: %s\n", directory_Info->d_name);
 
 
 			if(PID == 0) {			//this means it's a child Process
-				strcpy(current_dir_path, path);	//changing the current path for child process as it is going to be at sub directory level
+				strcat(current_dir_path, "/");
+				strcat(current_dir_path, directory_Info->d_name);
+				//strcpy(current_dir_path, path);	//changing the current path for child process as it is going to be at sub directory level
 				directory = opendir(path);	//changing directory to sub directory for child process
 			}
 			else if(PID > 0) {
@@ -255,7 +259,7 @@ printf("This is the file name: %s\n", directory_Info->d_name);
 
 				if(PID == 0) {
 					FILE * file = fopen(path, "r");
-					return_Value = sort_The_List(sorting_Column, file);
+					return_Value = sort_The_List(sorting_Column, file, path, directory_Info->d_name);
 					return return_Value;
 				}
 				else if (PID > 0) {
@@ -274,21 +278,34 @@ printf("This is the file name: %s\n", directory_Info->d_name);
 }
 
 
-
+void remove_CSV (char * path, char * new_Path){
+	if(strcmp (path + strlen(path) - 4, ".csv") == 0){
+		strncat(new_Path, path, strlen(path)-4);
+		return;
+	}
+	return;
+}
 
 
 
 /*
 Writes the data from the movie_Record into stdout
 */
-void print_The_List(BUFFER* pHeader, movie_Record* pRecordArray) {
-	FILE *output_File = stdout;
-	fprintf(output_File, "%s\n", pHeader->data);																										// Print header line
+void print_The_List(BUFFER* pHeader, movie_Record* pRecordArray, char * path, char * file_Name, char * column) {
+	char * output_File;
+	char * new_Path;
+	remove_CSV(path, new_Path);
+	strcat(output_File, path);
+	strcat(output_File, "-sorted-");
+	strcat(output_File, column);
+	strcat(output_File, ".csv");
+	FILE * file = fopen(output_File, "w");
+	fprintf(file, "%s\n", pHeader->data);																										// Print header line
 
 	//print all records
 	int xyz;
 	for (xyz = 0; xyz < pRecordArray->iSize; xyz++) {
 		*((*(pRecordArray->pRecArray + xyz))->sorting_Key_Term) = (*(pRecordArray->pRecArray + xyz))->chHold;		// Put back the char set to '\0' for sorting key
-		fprintf(output_File, "%s\n", (*(pRecordArray->pRecArray + xyz))->recordData);													// Print Records in a loop
+		fprintf(file, "%s\n", (*(pRecordArray->pRecArray + xyz))->recordData);													// Print Records in a loop
 	}
 }
