@@ -11,6 +11,7 @@
 #include "mergesort.h"
 #include "simpleCSVsorter.h"
 #include "tokenizer.h"
+#include <sys/wait.h>
 #define TRUE				1
 #define FALSE				0
 
@@ -97,7 +98,7 @@ int sort_The_List(char* sort_By_This_Value, FILE* file) {
 	movie_List.pRecArray = (one_Movie_Values**) malloc (1024 * sizeof(one_Movie_Values*));
 	movie_List.iCapacity = 1024;
 	movie_List.iSize = 0;
-	int no_Use = 0;
+	//int no_Use = 0;
 		// Read the header and get the index for the sorting key
 		if (getline(&(read_File.data), &(read_File.length_Of_Data), file) > 0 ) {
 			delete_Newline_Char_At_The_End(&read_File);						// this will delete the new line character from the end of the string line
@@ -122,7 +123,7 @@ int sort_The_List(char* sort_By_This_Value, FILE* file) {
 
 					one_Movie_Values* pRecord = make_Movie_Value_List(read_File.data, &column_Info);
 					if (pRecord) {
-					no_Use =	add_One_Movie_To_The_List(&movie_List, pRecord);
+						add_One_Movie_To_The_List(&movie_List, pRecord);
 					}
 					else {
 						printf( "Error! Unable to create movie list!\n");
