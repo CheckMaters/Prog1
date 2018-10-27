@@ -20,6 +20,12 @@ within provided directory.
 */
 int scan_Directory (DIR * directory, char * sorting_Column, char * path);
 
+/*
+this function will reallocate
+space as per requirement
+*/
+
+void space_Needed (char * here, int size);
 
 //this function checks if the given char string is directory or not
 int is_Directory (const char * name);
