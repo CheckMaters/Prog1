@@ -18,43 +18,79 @@
 int main(int argc, char* argv[]) {
 	//checking if the input argument is correct or Not
 
+	if(argc == 3) {
+					if(strcmp("-c", argv[1]) != 0) {
+							fprintf(stderr, "Error! Parameters are not correctly formated\n");
+							return -1;    //returning -1 because it's an error
+					}
+
+					int return_Val_For_Main = -1;
+					/*
+					since there isn't any -d in the Parameter
+					we are going to use the current working
+					directory as input and output directory
+					*/
+
+					char * directory_char = (char *) malloc (sizeof(char));
+					strcpy(directory_char,".");
+//printf("%s\n", directory_char)
+					/*
+					this will create a directory and also
+					a struct that keeps all the information
+					about directory.
+					*/
+					DIR * directory = opendir(directory_char);
+
+					if(directory == NULL) {
+							fprintf(stderr, "Error! Given directory is pointing to NULL\n");
+							return -1;		//returning -1 because it's an error
+					}
+
+					char* sort_By_This_Value = argv[2];
+					return_Val_For_Main = scan_Directory(directory, sort_By_This_Value, directory_char);
+					free(directory_char);
+					return return_Val_For_Main;
+		}
 
 	//the output file is not given in the parameter
-	if(argc == 5 || argc == 7) {
-		if(strcmp("-c", argv[1]) != 0 || strcmp("-d", argv[3]) != 0) {
-			printf("Parameters are not correctly formated\n");
-			return -1;				//returning -1 because it's an error
+		else if(argc == 5 || argc == 7) {
+
+					if(strcmp("-c", argv[1]) != 0 || strcmp("-d", argv[3]) != 0) {
+								fprintf(stderr, "Error! Parameters are not correctly formated\n");
+								return -1;				//returning -1 because it's an error
+					}
+					if(argc == 7) {
+								if(strcmp("-o", argv[5]) != 0) {
+												fprintf(stderr, "Error! Parameters are not correctly formated\n");
+												return -1;		//returning -1 because it's an error
+								}
+					}
+
+					/*
+					this will create a directory and also
+					a struct that keeps all the information
+					about directory.
+					*/
+
+					DIR * directory;
+					directory = opendir(argv[4]);
+
+					if(directory == NULL) {
+								fprintf(stderr, "Error! Given directory is pointing to NULL\n");
+								return -1;		//returning -1 because it's an error
+					}
+
+					char* sort_By_This_Value = argv[2];
+					return scan_Directory(directory, sort_By_This_Value, argv[4]);
 		}
-		if(argc == 7) {
-				if(strcmp("-o", argv[5]) != 0) {
-					printf("Parameters are not correctly formated\n");
-					return -1;		//returning -1 because it's an error
-				}
-		}
-	}
-	else {
-		printf("Parameters are not correctly formated\n");
-		return -1;  			//returning -1 because it's an error
-	}
 
-	/*
-	this will create a directory and also
-	a struct that keeps all the information
-	about directory.
-	*/
 
-	DIR * directory;
-	directory = opendir(argv[4]);
-
-		if(directory == NULL) {
-			printf("ERROR! Given directory is pointing to NULL\n");
-			return -1;		//returning -1 because it's an error
+		else {
+					fprintf(stderr, "Error! Parameters are not correctly formated\n");
+					return -1;  			//returning -1 because it's an error
 		}
 
-		char* sort_By_This_Value = argv[2];
-
-		return scan_Directory(directory, sort_By_This_Value, argv[4]);
-
+return 0;
 }
 
 
@@ -67,89 +103,88 @@ by sort_By_This_Value.
 */
 int sort_The_List(char* sort_By_This_Value, FILE* file, char * path, char * file_Name) {
 
-	// Buffer for reading from stdin
-	BUFFER read_File;																	// Buffer is created to read the stdin File
-	BUFFER header_Of_File;																// For holding the header line
+			// Buffer for reading from stdin
+			BUFFER read_File;																	// Buffer is created to read the stdin File
+			BUFFER header_Of_File;																// For holding the header line
 
 
-	FUNCTION_POINTER_CMPDATA pFuncCompare = compare;
-	//Initializing Buffer to NULL and then will add data to it
-	read_File.data = NULL;
-	read_File.length_Of_Data = 0;
+			FUNCTION_POINTER_CMPDATA pFuncCompare = compare;
+			//Initializing Buffer to NULL and then will add data to it
+			read_File.data = NULL;
+			read_File.length_Of_Data = 0;
 
-	int output_Result = 1;			//setting the output result to 1 in the beginning
+			int output_Result = 1;			//setting the output result to 1 in the beginning
 
-	sorting_Column_Info column_Info;						//this will hold info regarding the column's type and index no.
-	column_Info.index = -1;
-	column_Info.index_Type_SIF = INDEX_TYPE_INTEGER;
-					/*
-					the type of column to sort is set to integer First
-					and will be changed according later in the function
-					if necessary
-					*/
-
-
-
-	// To hold movie list array
-	movie_Record movie_List;
-
-	//Intializing movie_Record named movie_List
-	movie_List.pRecArray = (one_Movie_Values**) malloc (1024 * sizeof(one_Movie_Values*));
-	movie_List.iCapacity = 1024;
-	movie_List.iSize = 0;
-	int no_Use = 0;
-		// Read the header and get the index for the sorting key
-		if (getline(&(read_File.data), &(read_File.length_Of_Data), file) > 0 ) {
-			delete_Newline_Char_At_The_End(&read_File);						// this will delete the new line character from the end of the string line
-
-			header_Of_File.data = (char*)malloc (sizeof(char) * read_File.length_Of_Data);
-			header_Of_File.length_Of_Data = read_File.length_Of_Data;
+			sorting_Column_Info column_Info;						//this will hold info regarding the column's type and index no.
+			column_Info.index = -1;
+			column_Info.index_Type_SIF = INDEX_TYPE_INTEGER;
+							/*
+							the type of column to sort is set to integer First
+							and will be changed according later in the function
+							if necessary
+							*/
 
 
 
+			// To hold movie list array
+			movie_Record movie_List;
+
+			//Intializing movie_Record named movie_List
+			movie_List.pRecArray = (one_Movie_Values**) malloc (1024 * sizeof(one_Movie_Values*));
+			movie_List.iCapacity = 1024;
+			movie_List.iSize = 0;
+			int no_Use = 0;
+
+			// Read the header and get the index for the sorting key
+			if (getline(&(read_File.data), &(read_File.length_Of_Data), file) > 0 ) {
+							delete_Newline_Char_At_The_End(&read_File);						// this will delete the new line character from the end of the string line
+
+							header_Of_File.data = (char*)malloc (sizeof(char) * read_File.length_Of_Data);
+							header_Of_File.length_Of_Data = read_File.length_Of_Data;
 
 
-			strcpy(header_Of_File.data, read_File.data);			// copy of header line before tokenizing
-			//head_Of_File keeps record of the first line that is that name of all the columns
+							strcpy(header_Of_File.data, read_File.data);			// copy of header line before tokenizing
+							//head_Of_File keeps record of the first line that is that name of all the columns
 
-			if (get_Column_Index_To_Sort_List(sort_By_This_Value, &column_Info, read_File.data)) {
-							printf( "Error! Unable to parse the input column name\n");
-						}
-						else {
-				// Read data line by line. Creates record and put them into array
-				while (getline(&(read_File.data), &(read_File.length_Of_Data), file) > 0) {
-					delete_Newline_Char_At_The_End(&read_File);
+							if (get_Column_Index_To_Sort_List(sort_By_This_Value, &column_Info, read_File.data)) {
+												fprintf(stderr, "Error! Unable to parse the input column name\n");
+							}
+							else {
+												// Read data line by line. Creates record and put them into array
+												while (getline(&(read_File.data), &(read_File.length_Of_Data), file) > 0) {
+																delete_Newline_Char_At_The_End(&read_File);
+																one_Movie_Values* pRecord = make_Movie_Value_List(read_File.data, &column_Info);
 
-					one_Movie_Values* pRecord = make_Movie_Value_List(read_File.data, &column_Info);
-					if (pRecord) {
-					no_Use =	add_One_Movie_To_The_List(&movie_List, pRecord);
-					}
-					else {
-						printf( "Error! Unable to create movie list!\n");
-					}
-		}
-				/*
-				merge sort will sort the array of movie list based
-				on the index type and column name entered in the
-				command prompt
-				*/
-				mergeSort((void**)movie_List.pRecArray, 0, movie_List.iSize - 1, &column_Info, pFuncCompare);
-				// Output sorted records to file
+																if (pRecord) {
+																					no_Use =	add_One_Movie_To_The_List(&movie_List, pRecord);
+																}
+																else {
+																					fprintf(stderr, "Error! Unable to create movie list!\n");
+																}
+												}
+												/*
+												merge sort will sort the array of movie list based
+												on the index type and column name entered in the
+												command prompt
+												*/
+											mergeSort((void**)movie_List.pRecArray, 0, movie_List.iSize - 1, &column_Info, pFuncCompare);
+											// Output sorted records to file
 
-				print_The_List(&header_Of_File, &movie_List, path, file_Name, sort_By_This_Value);
-				printf("sorted\n");
-				output_Result = 0;
-		}
-	}
-		else {
-			printf("Error! Unable to read file provided within directory. Please check file or directory\n");
-		}
+											print_The_List(&header_Of_File, &movie_List, path, file_Name, sort_By_This_Value);
+//printf("sorted\n");
+											output_Result = 0;
+											}
+							}
 
-	freeBuffer(&header_Of_File);
-	freeBuffer(&read_File);
-	if (movie_List.pRecArray != NULL) {
-		clearMovieList(&movie_List);
-	}
+							else {
+											fprintf(stderr,"Error! Unable to read file provided within directory. Please check file or directory\n");
+							}
+
+							freeBuffer(&header_Of_File);
+							freeBuffer(&read_File);
+							if (movie_List.pRecArray != NULL) {
+												clearMovieList(&movie_List);
+							}
 
 
 	return output_Result;
@@ -161,37 +196,44 @@ int sort_The_List(char* sort_By_This_Value, FILE* file, char * path, char * file
 
 //this checks if the given char string is directory or not
 int is_Directory(const char * name) {
-	DIR * temp_dir = opendir(name);
-	if (temp_dir != NULL){
-		return 0;	//returns 0 if it's directory, else -1
-	}
-	return -1;
+		DIR * temp_dir = opendir(name);
+		if (temp_dir != NULL){
+						return 0;	//returns 0 if it's directory, else -1
+		}
+		return -1;
 }
+
+
+
 
 
 //this checks if the given char string is CSV file or not
 int is_CSV_File (const char * name, char * column) {
 
 //printf("CHECKING THIS FILE : %s with this column %s\n\n", name, column);
-	char * test_Name = (char *) calloc ((sizeof(char) * strlen(column)) + 5, (sizeof(char) * strlen(column)) + 5);
-	strncpy(test_Name, column, strlen(column));
-	strcat(test_Name, ".csv");
+			char * test_Name = (char *) calloc (strlen(column) + 4, sizeof(char));
+			strncpy(test_Name, column, strlen(column));
+			strcat(test_Name, ".csv");
 
 //printf("this is what we are checking : %s\n\n", test_Name);
 
-	if((strlen(name) > (strlen(column) + 4)) && !(strcmp(name + strlen(name) - (strlen(column) + 4), test_Name))){
-		free(test_Name);
-//printf("THIS FILE IS ALREADY SORTED\n");
-		return -1;		//returning -1 because this file is already sorted
-	}
+			if((strlen(name) > (strlen(column) + 4)) && !(strcmp(name + strlen(name) - (strlen(column) + 4), test_Name))){
+						free(test_Name);
+						fprintf(stderr, "Error! This file is already sorted by the sorter\n");
+						return -1;		//returning -1 because this file is already sorted
+			}
 
-	if(strlen(name) > 4 && !(strcmp(name + strlen(name) - 4, ".csv"))){
-		free(test_Name);
-		return 0;			//returns 0 if it's csv file, else -1
-	}
-		free(test_Name);
-	   return -1;
+			if(strlen(name) > 4 && !(strcmp(name + strlen(name) - 4, ".csv"))){
+						free(test_Name);
+						return 0;			//returns 0 if it's csv file, else -1
+			}
+
+			fprintf(stderr, "Error! This isn't a CSV file!\n");
+			free(test_Name);
+	   	return -1;
 }
+
+
 
 
 /*
@@ -204,53 +246,62 @@ column user wants to sort file on.
 */
 int scan_Directory(DIR * directory, char * sorting_Column, char * path){
 
-	if(directory == NULL){
-		printf("ERROR! Unable to open directory. NULL pointer\n");
-		return -1;			//returning -1 because it is an error
-	}
-
-	//setting this value to an unusal value so that if later program breaks, we can check if this value changes or not
-	int return_Value = -500;
-	int PID = -500;		// this PID will store the PID of child going through sub-directory
-	int PID_Two = -500;	//this PID will store the PID of child sorting csv file
-	struct dirent * directory_Info;
-	//char current_dir_path[strlen(path) + 1];
-	char * current_dir_path = (char *) malloc ((strlen(path) + 1) * sizeof(char));
-	strcat(current_dir_path, path);
+				if(directory == NULL){
+									fprintf(stderr, "Error! Unable to open directory. NULL pointer\n");
+									return -1;			//returning -1 because it is an error
+				}
 
 
-	while ((directory_Info = readdir(directory))!= NULL){
+				//setting this value to an unusal value so that if later program breaks, we can check if this value changes or not
+				int return_Value = -500;
+				int PID = -500;		// this PID will store the PID of child going through sub-directory
+//	int PID_Two = -500;	//this PID will store the PID of child sorting csv file
+				struct dirent * directory_Info; //this is the struct that will keep info about each the file in each while loop
+
+				//char current_dir_path[strlen(path) + 1];
+				char * current_dir_path = (char *) calloc (strlen(path), sizeof(char));
+				strcat(current_dir_path, path);
+
+
+				while ((directory_Info = readdir(directory))!= NULL){
 
 //printf("This is the file name part one: %s\n", directory_Info->d_name);
 
-		//this if statement will skip over the first . and .. in the directory. d_name is the name of current file/pointer
-		if((strcmp(directory_Info->d_name, ".") == 0) || (strcmp(directory_Info->d_name, "..") == 0)){
-			continue;
-		}
+								//this if statement will skip over the first . and .. in the directory. d_name is the name of current file/pointer
+								if((strcmp(directory_Info->d_name, ".") == 0) || (strcmp(directory_Info->d_name, "..") == 0)){
+											continue;
+								}
 
+//printf("%s\n", directory_Info->d_name);
 //printf("This is the file name: %s\n", directory_Info->d_name);
-		/*
-		concatenating path as each file within directory
-		will have different path.
-		e.g-> directory/file1
-			directory/file2
-			directory/subdirectory/file3
-		*/
-		path = strcat(path, "/");
-		path = strcat(path, directory_Info->d_name);
 
 
-		//checks if the current file that file pointer points to is a directory or not
-		return_Value = is_Directory(path);
-		/*
-		if return value is zero, it means this is directory
-		and will perform recurssion from this point on that
-		sub-directory
-		*/
-		if(return_Value == 0) {
-			//**************this means it is directory, perform recurssion*****************
-			PID = fork();
-			int status = 0;		// this is just got parents to wait until child returns
+								/*
+								concatenating path as each file within directory
+								will have different path.
+								e.g-> directory/file1
+								directory/file2
+								directory/subdirectory/file3
+								*/
+								space_Needed(path, 1 + strlen(directory_Info->d_name));
+								strcat(path, "/");
+								strcat(path, directory_Info->d_name);
+
+//printf("%s\n", path);
+
+								//checks if the current file that file pointer points to is a directory or not
+								return_Value = is_Directory(path);
+
+
+								/*
+								if return value is zero, it means this is directory
+								and will perform recurssion from this point on that
+								sub-directory
+								*/
+								if(return_Value == 0) {
+									//**************this means it is directory, perform recurssion*****************
+									PID = fork();
+									int status = 0;		// this is just got parents to wait until child returns
 
 
 			if(PID == 0) {			//this means it's a child Process
@@ -294,6 +345,10 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path){
 }
 
 
+
+
+//this function will remove the .csv from the end of the char pointer
+
 void remove_CSV (char * path, char * new_Path){
 	if(strcmp(path + strlen(path) - 4, ".csv") == 0){
 		strncpy(new_Path, path, strlen(path) - 4);
@@ -304,13 +359,21 @@ void remove_CSV (char * path, char * new_Path){
 
 
 
+//this function will reallocate the memory of size size_S and type char if needed.
+void space_Needed (char * here, int size_S){
+  here = realloc (here, size_S * sizeof(char));
+  return;
+}
+
+
 /*
 Writes the data from the movie_Record into stdout
 */
 void print_The_List(BUFFER* pHeader, movie_Record* pRecordArray, char * path, char * file_Name, char * column) {
-	char * output_File = (char * ) calloc ((sizeof(char) * strlen(path)) + strlen(column) + 9, (sizeof(char) * strlen(path)) + strlen(column) + 9);
+
+	char * output_File = (char * ) calloc (strlen(path) + strlen(column) + 9, sizeof(char));
 	//char * new_Path;
-	char * new_Path = (char * ) calloc ((sizeof(char) * strlen(path)) - 3, (sizeof(char) * strlen(path)) - 3);
+	char * new_Path = (char * ) calloc ( strlen(path) - 3, sizeof(char) );
 	remove_CSV(path, new_Path);
 //printf("Path with out csv : %s\n", new_Path);
 	strcat(output_File, new_Path);
@@ -318,10 +381,10 @@ void print_The_List(BUFFER* pHeader, movie_Record* pRecordArray, char * path, ch
 	strcat(output_File, "-sorted-");
 	strcat(output_File, column);
 	strcat(output_File, ".csv");
-printf("Output file path : %s\n", output_File);
+//printf("Output file path : %s\n", output_File);
 	FILE * file = fopen(output_File, "w");
 if(file == NULL ){
-	printf("Can't open file\n\n");
+	fprintf(stderr, "Unable to open the output file.\n\n");
 }
 
 	fprintf(file, "%s\n", pHeader->data);																										// Print header line
