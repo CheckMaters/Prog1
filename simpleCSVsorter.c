@@ -53,10 +53,15 @@ int parents_PID = getpid();
 		}
 
 		char* sort_By_This_Value = argv[2];
+		printf("Initial PID: %d\nPIDS of all child Processes: shit\n", parents_PID);
+	//	printf("PIDS of all child processes:2 ");
+
 		return_Val_For_Main = scan_Directory(directory, sort_By_This_Value, directory_Char, directory_Char, &PID_Counter);
 		closedir(directory);
+
+
 		if(getpid() == parents_PID){
-		printf("Total Number of Processes: %d\n", PID_Counter);
+		printf("\nTotal Number of Processes: %d\n", PID_Counter);
 		}
 		return return_Val_For_Main;
 	}
@@ -81,10 +86,14 @@ else 	if(argc == 5) {
 //char output_Place[strlen(argv[4]) + 1];
 //memcpy(output_Place, argv[4], strlen(argv[4]));
 
+			//	printf("Initial PID: %d\n", parents_PID);
+			printf("Initial PID: %d\nPIDS of all child Processes: shit2\n", parents_PID);
+			//	printf("PIDS of all child processes:1 ");
+
 			return_Val_For_Main = scan_Directory(directory, sort_By_This_Value, argv[4], argv[4], &PID_Counter);
 			closedir(directory);
 			if(getpid() == parents_PID){
-			printf("Total Number of Processes: %d\n", PID_Counter);
+			printf("\nTotal Number of Processes: %d\n", PID_Counter);
 			}
 			return return_Val_For_Main;
 
@@ -106,16 +115,21 @@ else 	if(argc == 5) {
 
 					char* sort_By_This_Value = argv[2];
 
+
+					//printf("Initial PID: %d\n", parents_PID);
+					printf("Initial PID: %d\nPIDS of all child Processes: shit3\n", parents_PID);
+					//printf("PIDS of all child processes:3 ");
+
 					return_Val_For_Main = scan_Directory(directory, sort_By_This_Value, argv[4], argv[6], &PID_Counter);
 					closedir(directory);
 					if(getpid() == parents_PID){
-					printf("Total Number of Processes: %d\n", PID_Counter);
+					printf("\nTotal Number of Processes: %d\n", PID_Counter);
 					}
 					return return_Val_For_Main;
 		}
 
 	else {
-		printf("Parameters are not correctly formated\n");
+		fprintf(stderr, "Parameters are not correctly formated\n");
 		return -1;  			//returning -1 because it's an error
 	}
 
@@ -199,7 +213,7 @@ int sort_The_List(char* sort_By_This_Value, FILE* file, char * output_Dir, char 
 				*/
 				mergeSort((void**)movie_List.pRecArray, 0, movie_List.iSize - 1, &column_Info, pFuncCompare);
 				// Output sorted records to file
-				printf("sorted\n");
+			//	printf("sorted\n");
 				print_The_List(&header_Of_File, &movie_List, output_Dir, file_Name, sort_By_This_Value);
 				 output_Result = 0;
 		}
@@ -255,7 +269,7 @@ int is_CSV_File (const char * name, char * column) {
 		return 0;			//returns 0 if it's csv file, else -1
 	}
 
-	fprintf(stderr, "Error! This isn't a CSV file!\n");
+//	fprintf(stderr, "Error! This isn't a CSV file!\n");
 	//free(test_Name);
 	return -1;
 }
@@ -287,7 +301,7 @@ column user wants to sort file on.
 int scan_Directory(DIR * directory, char * sorting_Column, char * path, char * output_Directory, int * counter){
 
 	if(directory == NULL){
-		printf("ERROR! Unable to open directory. NULL pointer\n");
+		fprintf(stderr, "ERROR! Unable to open directory. NULL pointer\n");
 		return -1;			//returning -1 because it is an error
 	}
 
@@ -318,13 +332,11 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path, char * o
 
 
 		PID = fork();
-		*counter = *counter + 1;
 		int status = 0;
 
 
 		if(PID == 0){
 			if((strcmp(directory_Info->d_name, ".") == 0) || (strcmp(directory_Info->d_name, "..") == 0)){
-				*counter = *counter + 1;
 				exit(0);
 			}
 			path = strcat(path, "/");
@@ -340,7 +352,6 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path, char * o
 			if(return_Value == 0) {
 				//**************this means it is directory, perform recurssion*****************
 				PID = fork();
-				*counter = *counter + 1;
 				int status_Three = 0;		// this is just got parents to wait until child returns
 
 
@@ -349,6 +360,8 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path, char * o
 					directory = opendir(path);	//changing directory to sub directory for child process
 				}
 				else if(PID > 0) {
+					(*counter)++;
+					printf("%d,", PID);
 					wait(&status_Three);	//parent waiting until child returns going through sub level directory;
 					exit(0);
 				}
@@ -358,7 +371,6 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path, char * o
 				if(return_Value == 0){
 					//************this means it is CSV file, perform sorting******************
 					PID = fork();
-					*counter = *counter + 1;
 					int status_Two = 0;
 
 					if(PID == 0) {
@@ -368,13 +380,15 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path, char * o
 						return return_Value;
 					}
 					else if (PID > 0) {
+						(*counter)++;
+						printf("%d,", PID);
 						wait(&status_Two);	//parent waiting until child sorts the CSV file.
 						exit(0);
 					}
 				}
 				else {
-					*counter = *counter + 1;
-					printf("%s is not a csv file or directory\n", path);
+				//	printf("%s is not a csv file or directory\n", path);
+				//	printf("%d,", getpid());
 					strcpy(path, current_dir_path);
 					exit(0); //continuing to the next loop because read value isn't directory or CSV file
 				}
@@ -382,6 +396,8 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path, char * o
 
 		}
 		else if(PID>0){
+			(*counter)++;
+			printf("%d," ,PID);
 			wait(&status); //parent waiting until child returns going through sub level directory;
 			continue;
 		}
@@ -420,7 +436,7 @@ void print_The_List(BUFFER* pHeader, movie_Record* pRecordArray, char * path, ch
 		strcat(path, "/");
 		strcpy(output_File, path);
 	}
-	printf("Directory : %s\n\n\n", output_File);
+	//printf("Directory : %s\n\n\n", output_File);
 	char * file_Name_Without_CSV = (char * ) malloc ( (strlen(file_Name)-3)  * sizeof(char) );
 	remove_CSV(file_Name, file_Name_Without_CSV);
 //printf("Path with out csv : %s\n", new_Path);
@@ -429,7 +445,7 @@ void print_The_List(BUFFER* pHeader, movie_Record* pRecordArray, char * path, ch
 	strcat(output_File, "-sorted-");
 	strcat(output_File, column);
 	strcat(output_File, ".csv");
-printf("Output file path : %s\n", output_File);
+//printf("Output file path : %s\n", output_File);
 	FILE * file = fopen(output_File, "w");
 if(file == NULL ){
 	fprintf(stderr, "Unable to open the output file.\n\n");
