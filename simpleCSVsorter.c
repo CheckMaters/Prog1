@@ -69,34 +69,66 @@ int parents_PID = getpid();
 	//the output file is not given in the parameter
 
 else 	if(argc == 5) {
-		if(strcmp("-c", argv[1]) != 0 || strcmp("-d", argv[3]) != 0) {
+		if(strcmp("-c", argv[1]) != 0) {
 			fprintf(stderr, "Parameters are not correctly formated\n");
 			return -1;				//returning -1 because it's an error
 		}
+		if(strcmp("-d", argv[3]) == 0) {
+			DIR * directory;
+			directory = opendir(argv[4]);
 
+				if(directory == NULL) {
+					printf("ERROR! Given directory is pointing to NULL\n");
+					return -1;		//returning -1 because it's an error
+				}
 
-		DIR * directory;
-		directory = opendir(argv[4]);
+				char* sort_By_This_Value = argv[2];
+	//char output_Place[strlen(argv[4]) + 1];
+	//memcpy(output_Place, argv[4], strlen(argv[4]));
 
+				//	printf("Initial PID: %d\n", parents_PID);
+				printf("Initial PID: %d\nPIDS of all child Processes: \n", parents_PID);
+				//	printf("PIDS of all child processes:1 ");
+
+				return_Val_For_Main = scan_Directory(directory, sort_By_This_Value, argv[4], argv[4], &PID_Counter);
+				closedir(directory);
+				if(getpid() == parents_PID){
+				printf("\nTotal Number of Processes: %d\n", PID_Counter);
+				}
+				return return_Val_For_Main;
+
+		}
+		else if(strcmp("-o", argv[3]) == 0){
+			DIR * directory;
+			directory = opendir("./");
 			if(directory == NULL) {
 				printf("ERROR! Given directory is pointing to NULL\n");
 				return -1;		//returning -1 because it's an error
 			}
-
+			DIR * output_place;
+			output_place = opendir(argv[4]);
+			if(output_place == NULL){
+				printf("ERROR! Given directory is pointing to NULL\n");
+				return -1;
+			}
+			else {
+				closedir(output_place);
+			}
+			char directory_Char[2000] = ".";
 			char* sort_By_This_Value = argv[2];
-//char output_Place[strlen(argv[4]) + 1];
-//memcpy(output_Place, argv[4], strlen(argv[4]));
-
-			//	printf("Initial PID: %d\n", parents_PID);
 			printf("Initial PID: %d\nPIDS of all child Processes: \n", parents_PID);
-			//	printf("PIDS of all child processes:1 ");
-
-			return_Val_For_Main = scan_Directory(directory, sort_By_This_Value, argv[4], argv[4], &PID_Counter);
+			return_Val_For_Main = scan_Directory(directory, sort_By_This_Value, directory_Char, argv[4], &PID_Counter);
 			closedir(directory);
 			if(getpid() == parents_PID){
 			printf("\nTotal Number of Processes: %d\n", PID_Counter);
 			}
 			return return_Val_For_Main;
+
+		}
+		else {
+			fprintf(stderr, "Parameters are not correctly formated\n");
+			return -1;				//returning -1 because it's an error
+		}
 
 }
 
@@ -126,7 +158,7 @@ else 	if(argc == 5) {
 					//printf("Initial PID: %d\n", parents_PID);
 					printf("Initial PID: %d\nPIDS of all child Processes: \n", parents_PID);
 					//printf("PIDS of all child processes:3 ");
-printf("\n\nThis is in main: %s\n\n", print_Here);
+
 					return_Val_For_Main = scan_Directory(directory, sort_By_This_Value, argv[4], print_Here, &PID_Counter);
 					closedir(directory);
 					if(getpid() == parents_PID){
@@ -222,7 +254,7 @@ int sort_The_List(char* sort_By_This_Value, FILE* file, char * output_Dir, char 
 				mergeSort((void**)movie_List.pRecArray, 0, movie_List.iSize - 1, &column_Info, pFuncCompare);
 				// Output sorted records to file
 			//	printf("sorted\n");
-printf("\n\nThis is in Scan the list : %s\n\n", output_Dir);
+
 				print_The_List(&header_Of_File, &movie_List, output_Dir, file_Name, sort_By_This_Value);
 				 output_Result = 0;
 		}
@@ -385,7 +417,7 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path, char * o
 
 					if(PID == 0) {
 						FILE * file = fopen(path, "r");
-						printf("\n\nThis is in Scan the directory : %s\n\n", output_Directory);
+
 						return_Value = sort_The_List(sorting_Column, file, output_Directory, directory_Info->d_name);
 						fclose(file);
 						return return_Value;
