@@ -36,7 +36,7 @@ int parents_PID = getpid();
 		we are going to use the current working
 		directory as input and output directory
 		*/
-		char directory_Char[1000] = ".";
+		char directory_Char[2000] = ".";
 
 		/*
 		this will create a directory and also
@@ -45,13 +45,7 @@ int parents_PID = getpid();
 		*/
 
 		DIR * directory = opendir(directory_Char);
-		char * output_Place = (char *) malloc (1 + strlen(directory_Char));
-		if(output_Place){
-			strcpy(output_Place, directory_Char);
-		}
-		else {
-			fprintf(stderr, "Malloc Error!\n");
-		}
+
 //char output_Place[50] = "./";
 		if(directory == NULL) {
 			fprintf(stderr, "Error! Given directory is pointing to NULL\n");
@@ -71,7 +65,7 @@ int parents_PID = getpid();
 
 else 	if(argc == 5) {
 		if(strcmp("-c", argv[1]) != 0 || strcmp("-d", argv[3]) != 0) {
-			printf("Parameters are not correctly formated\n");
+			fprintf(stderr, "Parameters are not correctly formated\n");
 			return -1;				//returning -1 because it's an error
 		}
 
@@ -252,7 +246,7 @@ int is_CSV_File (const char * name, char * column) {
 
 	if((strlen(name) > (strlen(column) + 4)) && !(strcmp(name + strlen(name) - (strlen(column) + 4), test_Name))){
 	//	free(test_Name);
-		fprintf(stderr, "Error! This file is already sorted by the sorter\n");
+		fprintf(stderr, "Error! This file is already sorted by the sorted\n");
 		return -1;		//returning -1 because this file is already sorted
 	}
 
@@ -309,9 +303,7 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path, char * o
 //printf("This is the file name part one: %s\n", directory_Info->d_name);
 
 		//this if statement will skip over the first . and .. in the directory. d_name is the name of current file/pointer
-		if((strcmp(directory_Info->d_name, ".") == 0) || (strcmp(directory_Info->d_name, "..") == 0)){
-			continue;
-		}
+
 
 
 //printf("Current Directory: %s\n\n", current_dir_path);
@@ -323,59 +315,81 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path, char * o
 			directory/file2
 			directory/subdirectory/file3
 		*/
-		path = strcat(path, "/");
-		path = strcat(path, directory_Info->d_name);
 
 
-		//checks if the current file that file pointer points to is a directory or not
-		return_Value = is_Directory(path);
-		/*
-		if return value is zero, it means this is directory
-		and will perform recurssion from this point on that
-		sub-directory
-		*/
-		if(return_Value == 0) {
-			//**************this means it is directory, perform recurssion*****************
-			PID = fork();
-			*counter = *counter + 1;
-			int status = 0;		// this is just got parents to wait until child returns
+		PID = fork();
+		*counter = *counter + 1;
+		int status = 0;
 
 
-			if(PID == 0) {			//this means it's a child Process
-				strcpy(current_dir_path, path);	//changing the current path for child process as it is going to be at sub directory level
-				directory = opendir(path);	//changing directory to sub directory for child process
+		if(PID == 0){
+			if((strcmp(directory_Info->d_name, ".") == 0) || (strcmp(directory_Info->d_name, "..") == 0)){
+				*counter = *counter + 1;
+				exit(0);
 			}
-			else if(PID > 0) {
-				wait(&status);	//parent waiting until child returns going through sub level directory;
-			}
-		}
+			path = strcat(path, "/");
+			path = strcat(path, directory_Info->d_name);
+			//checks if the current file that file pointer points to is a directory or not
+			return_Value = is_Directory(path);
 
-
-		// if the read value is not directory, check if it's CSV file or not
-		else {
-			return_Value = is_CSV_File(path, sorting_Column);
-			if(return_Value == 0){
-				//************this means it is CSV file, perform sorting******************
+			/*
+			if return value is zero, it means this is directory
+			and will perform recurssion from this point on that
+			sub-directory
+			*/
+			if(return_Value == 0) {
+				//**************this means it is directory, perform recurssion*****************
 				PID = fork();
 				*counter = *counter + 1;
-				int status_Two = 0;
+				int status_Three = 0;		// this is just got parents to wait until child returns
 
-				if(PID == 0) {
-					FILE * file = fopen(path, "r");
-					return_Value = sort_The_List(sorting_Column, file, output_Directory, directory_Info->d_name);
-					fclose(file);
-					return return_Value;
+
+				if(PID == 0) {			//this means it's a child Process
+					strcpy(current_dir_path, path);	//changing the current path for child process as it is going to be at sub directory level
+					directory = opendir(path);	//changing directory to sub directory for child process
 				}
-				else if (PID > 0) {
-					wait(&status_Two);	//parent waiting until child sorts the CSV file.
+				else if(PID > 0) {
+					wait(&status_Three);	//parent waiting until child returns going through sub level directory;
+					exit(0);
 				}
 			}
 			else {
-				printf("%s is not a csv file or directory\n", path);
-				strcpy(path, current_dir_path);
-				continue; //continuing to the next loop because read value isn't directory or CSV file
+				return_Value = is_CSV_File(path, sorting_Column);
+				if(return_Value == 0){
+					//************this means it is CSV file, perform sorting******************
+					PID = fork();
+					*counter = *counter + 1;
+					int status_Two = 0;
+
+					if(PID == 0) {
+						FILE * file = fopen(path, "r");
+						return_Value = sort_The_List(sorting_Column, file, output_Directory, directory_Info->d_name);
+						fclose(file);
+						return return_Value;
+					}
+					else if (PID > 0) {
+						wait(&status_Two);	//parent waiting until child sorts the CSV file.
+						exit(0);
+					}
+				}
+				else {
+					*counter = *counter + 1;
+					printf("%s is not a csv file or directory\n", path);
+					strcpy(path, current_dir_path);
+					exit(0); //continuing to the next loop because read value isn't directory or CSV file
+				}
 			}
+
 		}
+		else if(PID>0){
+			wait(&status); //parent waiting until child returns going through sub level directory;
+			continue;
+		}
+
+
+
+		// if the read value is not directory, check if it's CSV file or not
+
 	strcpy(path,current_dir_path);	//changing directory/file1 to directory, because we are at same level but just looping to next file
 	}
 	return return_Value;
