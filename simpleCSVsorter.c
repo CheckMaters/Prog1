@@ -53,7 +53,7 @@ int parents_PID = getpid();
 		}
 
 		char* sort_By_This_Value = argv[2];
-		printf("Initial PID: %d\nPIDS of all child Processes: shit\n", parents_PID);
+		printf("Initial PID: %d\nPIDS of all child Processes: \n", parents_PID);
 	//	printf("PIDS of all child processes:2 ");
 
 		return_Val_For_Main = scan_Directory(directory, sort_By_This_Value, directory_Char, directory_Char, &PID_Counter);
@@ -74,6 +74,7 @@ else 	if(argc == 5) {
 			return -1;				//returning -1 because it's an error
 		}
 
+
 		DIR * directory;
 		directory = opendir(argv[4]);
 
@@ -87,7 +88,7 @@ else 	if(argc == 5) {
 //memcpy(output_Place, argv[4], strlen(argv[4]));
 
 			//	printf("Initial PID: %d\n", parents_PID);
-			printf("Initial PID: %d\nPIDS of all child Processes: shit2\n", parents_PID);
+			printf("Initial PID: %d\nPIDS of all child Processes: \n", parents_PID);
 			//	printf("PIDS of all child processes:1 ");
 
 			return_Val_For_Main = scan_Directory(directory, sort_By_This_Value, argv[4], argv[4], &PID_Counter);
@@ -115,16 +116,23 @@ else 	if(argc == 5) {
 
 					char* sort_By_This_Value = argv[2];
 
+					char print_Here[strlen(argv[6] + 1)];
+					strcpy(print_Here, argv[6]);
+
+
+
+
 
 					//printf("Initial PID: %d\n", parents_PID);
-					printf("Initial PID: %d\nPIDS of all child Processes: shit3\n", parents_PID);
+					printf("Initial PID: %d\nPIDS of all child Processes: \n", parents_PID);
 					//printf("PIDS of all child processes:3 ");
-
-					return_Val_For_Main = scan_Directory(directory, sort_By_This_Value, argv[4], argv[6], &PID_Counter);
+printf("\n\nThis is in main: %s\n\n", print_Here);
+					return_Val_For_Main = scan_Directory(directory, sort_By_This_Value, argv[4], print_Here, &PID_Counter);
 					closedir(directory);
 					if(getpid() == parents_PID){
 					printf("\nTotal Number of Processes: %d\n", PID_Counter);
 					}
+
 					return return_Val_For_Main;
 		}
 
@@ -214,6 +222,7 @@ int sort_The_List(char* sort_By_This_Value, FILE* file, char * output_Dir, char 
 				mergeSort((void**)movie_List.pRecArray, 0, movie_List.iSize - 1, &column_Info, pFuncCompare);
 				// Output sorted records to file
 			//	printf("sorted\n");
+printf("\n\nThis is in Scan the list : %s\n\n", output_Dir);
 				print_The_List(&header_Of_File, &movie_List, output_Dir, file_Name, sort_By_This_Value);
 				 output_Result = 0;
 		}
@@ -361,6 +370,7 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path, char * o
 				}
 				else if(PID > 0) {
 					(*counter)++;
+
 					printf("%d,", PID);
 					wait(&status_Three);	//parent waiting until child returns going through sub level directory;
 					exit(0);
@@ -375,11 +385,13 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path, char * o
 
 					if(PID == 0) {
 						FILE * file = fopen(path, "r");
+						printf("\n\nThis is in Scan the directory : %s\n\n", output_Directory);
 						return_Value = sort_The_List(sorting_Column, file, output_Directory, directory_Info->d_name);
 						fclose(file);
 						return return_Value;
 					}
 					else if (PID > 0) {
+
 						(*counter)++;
 						printf("%d,", PID);
 						wait(&status_Two);	//parent waiting until child sorts the CSV file.
@@ -389,6 +401,7 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path, char * o
 				else {
 				//	printf("%s is not a csv file or directory\n", path);
 				//	printf("%d,", getpid());
+
 					strcpy(path, current_dir_path);
 					exit(0); //continuing to the next loop because read value isn't directory or CSV file
 				}
@@ -396,6 +409,7 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path, char * o
 
 		}
 		else if(PID>0){
+
 			(*counter)++;
 			printf("%d," ,PID);
 			wait(&status); //parent waiting until child returns going through sub level directory;
@@ -427,14 +441,17 @@ Writes the data from the movie_Record into stdout
 */
 void print_The_List(BUFFER* pHeader, movie_Record* pRecordArray, char * path, char * file_Name, char * column) {
 
+printf("\n\nPATH: %s\n\n", path);
 
-	char * output_File = (char * ) malloc ((strlen(path) + strlen(column) + 9 + strlen(file_Name)) * sizeof(char));
+	char * output_File = (char * ) calloc ((strlen(path) + strlen(column) + 9 + strlen(file_Name)) , sizeof(char));
 	if (strcmp(path + strlen(path) - 4, ".csv") == 0){
 		strncpy(output_File, path, strlen(path) - strlen(file_Name));
+
 	}
 	 else if(strcmp (path + strlen(path) -1, "/") != 0){
 		strcat(path, "/");
 		strcpy(output_File, path);
+
 	}
 	//printf("Directory : %s\n\n\n", output_File);
 	char * file_Name_Without_CSV = (char * ) malloc ( (strlen(file_Name)-3)  * sizeof(char) );
@@ -445,7 +462,7 @@ void print_The_List(BUFFER* pHeader, movie_Record* pRecordArray, char * path, ch
 	strcat(output_File, "-sorted-");
 	strcat(output_File, column);
 	strcat(output_File, ".csv");
-//printf("Output file path : %s\n", output_File);
+
 	FILE * file = fopen(output_File, "w");
 if(file == NULL ){
 	fprintf(stderr, "Unable to open the output file.\n\n");
