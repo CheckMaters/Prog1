@@ -155,9 +155,9 @@ else 	if(argc == 5) {
 
 
 
-					//printf("Initial PID: %d\n", parents_PID);
-					printf("Initial PID: %d\nPIDS of all child Processes: \n", parents_PID);
-					//printf("PIDS of all child processes:3 ");
+				
+					printf("Initial PID: %d\nPIDS of all child Processes: ", parents_PID);
+
 
 					return_Val_For_Main = scan_Directory(directory, sort_By_This_Value, argv[4], print_Here, &PID_Counter);
 					closedir(directory);
@@ -373,11 +373,14 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path, char * o
 
 
 		PID = fork();
+		(*counter)++;
 		int status = 0;
 
 
 		if(PID == 0){
+
 			if((strcmp(directory_Info->d_name, ".") == 0) || (strcmp(directory_Info->d_name, "..") == 0)){
+				printf("%d," ,getpid());
 				exit(0);
 			}
 			path = strcat(path, "/");
@@ -392,18 +395,19 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path, char * o
 			*/
 			if(return_Value == 0) {
 				//**************this means it is directory, perform recurssion*****************
+
 				PID = fork();
 				int status_Three = 0;		// this is just got parents to wait until child returns
 
 
 				if(PID == 0) {			//this means it's a child Process
+					(*counter)++;
+
 					strcpy(current_dir_path, path);	//changing the current path for child process as it is going to be at sub directory level
 					directory = opendir(path);	//changing directory to sub directory for child process
 				}
 				else if(PID > 0) {
-					(*counter)++;
-
-					printf("%d,", PID);
+					printf("%d," ,getpid());
 					wait(&status_Three);	//parent waiting until child returns going through sub level directory;
 					exit(0);
 				}
@@ -417,23 +421,22 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path, char * o
 
 					if(PID == 0) {
 						FILE * file = fopen(path, "r");
-
 						return_Value = sort_The_List(sorting_Column, file, output_Directory, directory_Info->d_name);
 						fclose(file);
+						printf("%d," ,getpid());
+
+
 						return return_Value;
+
 					}
 					else if (PID > 0) {
 
-						(*counter)++;
-						printf("%d,", PID);
 						wait(&status_Two);	//parent waiting until child sorts the CSV file.
 						exit(0);
 					}
 				}
 				else {
 				//	printf("%s is not a csv file or directory\n", path);
-				//	printf("%d,", getpid());
-
 					strcpy(path, current_dir_path);
 					exit(0); //continuing to the next loop because read value isn't directory or CSV file
 				}
@@ -442,8 +445,6 @@ int scan_Directory(DIR * directory, char * sorting_Column, char * path, char * o
 		}
 		else if(PID>0){
 
-			(*counter)++;
-			printf("%d," ,PID);
 			wait(&status); //parent waiting until child returns going through sub level directory;
 			continue;
 		}
@@ -473,7 +474,7 @@ Writes the data from the movie_Record into stdout
 */
 void print_The_List(BUFFER* pHeader, movie_Record* pRecordArray, char * path, char * file_Name, char * column) {
 
-printf("\n\nPATH: %s\n\n", path);
+
 
 	char * output_File = (char * ) calloc ((strlen(path) + strlen(column) + 9 + strlen(file_Name)) , sizeof(char));
 	if (strcmp(path + strlen(path) - 4, ".csv") == 0){
