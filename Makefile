@@ -1,7 +1,7 @@
-all:simpleCSVsorter
+all:scannerCSVsorter
 
-simpleCSVsorter: mergesort.h movieListData.h movieValueList.h columnsorter.h tokenizer.h simpleCSVsorter.h generalFunctions.h mergesort.c movieListData.c movieValueList.c columnsorter.c tokenizer.c simpleCSVsorter.c generalFunctions.c
-	gcc -Wall -Werror -fsanitize=address -lm mergesort.c movieListData.c movieValueList.c columnsorter.c tokenizer.c simpleCSVsorter.c movieListData.h -o simpleCSVsorter
+scannerCSVsorter: mergesort.h movieListData.h movieValueList.h columnsorter.h tokenizer.h scannerCSVsorter.h generalFunctions.h mergesort.c movieListData.c movieValueList.c columnsorter.c tokenizer.c scannerCSVsorter.c generalFunctions.c
+	gcc -Wall -Werror generalFunctions.c mergesort.c movieListData.c movieValueList.c columnsorter.c tokenizer.c scannerCSVsorter.c -o scannerCSVsorter
 
 clean:
-	rm -rf simpleCSVsorter
+	rm -rf scannerCSVsorter
